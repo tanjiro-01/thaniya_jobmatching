@@ -155,6 +155,17 @@ const Dashboard = () => {
             )}
           </div>
         </div>
+      {user.role === 'admin' && (
+        <div className="admin-section">
+          <div className="actions card">
+            <h3>Admin Dashboard</h3>
+            <p>Welcome to the admin panel. Here you can manage all aspects of the JobPortal.</p>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+              <button className="btn btn-primary">Manage Users</button>
+              <button className="btn btn-outline" style={{ borderColor: '#646cff', color: '#646cff' }}>Manage Jobs</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
