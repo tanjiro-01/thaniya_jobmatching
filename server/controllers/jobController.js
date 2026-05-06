@@ -22,6 +22,18 @@ const getJobs = async (req, res) => {
   }
 };
 
+// @desc    Get jobs created by logged in recruiter
+// @route   GET /api/jobs/my-jobs
+// @access  Private/Recruiter
+const getMyCreatedJobs = async (req, res) => {
+  try {
+    const jobs = await Job.find({ recruiter: req.user._id }).sort('-createdAt');
+    res.json(jobs);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // @desc    Get job by ID
 // @route   GET /api/jobs/:id
 // @access  Public
@@ -116,4 +128,4 @@ const deleteJob = async (req, res) => {
   }
 };
 
-module.exports = { getJobs, getJobById, createJob, updateJob, deleteJob };
+module.exports = { getJobs, getMyCreatedJobs, getJobById, createJob, updateJob, deleteJob };

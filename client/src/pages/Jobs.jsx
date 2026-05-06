@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
+import { AuthContext } from '../context/AuthContext';
 import './Jobs.css';
 
 const Jobs = () => {
+  const { user } = useContext(AuthContext);
   const [jobs, setJobs] = useState([]);
   const [keyword, setKeyword] = useState('');
   const [location, setLocation] = useState('');
@@ -115,7 +117,21 @@ const Jobs = () => {
                 
                 <div className="job-card-footer">
                   <span className="post-date">Posted 2 days ago</span>
-                  <button className="btn btn-outline apply-btn">Apply Now</button>
+                  {user && user.role === 'candidate' && (
+                    <button 
+                      className="btn btn-outline apply-btn"
+                      onClick={async () => {
+                        try {
+                          await axios.post(`/api/applications/${job._id}`);
+                          alert('Applied successfully!');
+                        } catch (err) {
+                          alert(err.response?.data?.message || 'Error applying');
+                        }
+                      }}
+                    >
+                      Apply Now
+                    </button>
+                  )}
                 </div>
               </div>
             ))

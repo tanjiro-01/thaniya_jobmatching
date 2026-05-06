@@ -1,11 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { getJobs, getJobById, createJob, updateJob, deleteJob } = require('../controllers/jobController');
+const { getJobs, getMyCreatedJobs, getJobById, createJob, updateJob, deleteJob } = require('../controllers/jobController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 
 router.route('/')
   .get(getJobs)
   .post(protect, authorize('recruiter', 'admin'), createJob);
+
+router.get('/my-jobs', protect, authorize('recruiter', 'admin'), getMyCreatedJobs);
 
 router.route('/:id')
   .get(getJobById)

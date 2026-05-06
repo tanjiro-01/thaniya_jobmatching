@@ -55,6 +55,30 @@ const getRecruiterApplications = async (req, res) => {
   }
 };
 
+// @desc    Get applications for a specific job
+// @route   GET /api/applications/job/:jobId
+// @access  Private/Recruiter
+const getApplicationsByJob = async (req, res) => {
+  try {
+    const job = await Job.findById(req.params.jobId);
+    
+    if (!job) {
+      return res.status(404).json({ message: 'Job not found' });
+    }
+
+    if (job.recruiter.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return res.status(401).json({ message: 'Not authorized' });
+    }
+
+    const applications = await Application.find({ job: req.params.jobId })
+      .populate('candidate', 'name email resume skills');
+      
+    res.json(applications);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // @desc    Get candidate's own applications
 // @route   GET /api/applications/my
 // @access  Private/Candidate
@@ -97,6 +121,7 @@ const updateApplicationStatus = async (req, res) => {
 module.exports = {
   applyForJob,
   getRecruiterApplications,
+  getApplicationsByJob,
   getMyApplications,
   updateApplicationStatus
 };
