@@ -5,17 +5,30 @@ const Job = require('../models/Job');
 // @access  Public
 const getJobs = async (req, res) => {
   try {
-    const keyword = req.query.keyword
-      ? {
-          $or: [
-            { title: { $regex: req.query.keyword, $options: 'i' } },
-            { description: { $regex: req.query.keyword, $options: 'i' } },
-            { keywords: { $regex: req.query.keyword, $options: 'i' } }
-          ],
-        }
-      : {};
+    let query = {};
 
-    const jobs = await Job.find({ ...keyword }).populate('recruiter', 'name company');
+    if (req.query.keyword) {
+      query.$or = [
+        { title: { $regex: req.query.keyword, $options: 'i' } },
+        { description: { $regex: req.query.keyword, $options: 'i' } },
+        { keywords: { $regex: req.query.keyword, $options: 'i' } }
+      ];
+    }
+
+    if (req.query.location) {
+      query.location = { $regex: req.query.location, $options: 'i' };
+    }
+
+    // Since we don't have a rigid experience field in the model currently,
+    // we could filter by title or description optionally, or if we had an experience field, use it.
+    // For now, if experience is passed, we'll try to find it in the description as a basic filter.
+    if (req.query.experience) {
+      // Basic implementation for experience filtering
+      if (!query.$or) query.$or = [];
+      query.$or.push({ description: { $regex: req.query.experience, $options: 'i' } });
+    }
+
+    const jobs = await Job.find(query).populate('recruiter', 'name company');
     res.json(jobs);
   } catch (error) {
     res.status(500).json({ message: error.message });

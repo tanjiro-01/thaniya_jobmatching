@@ -7,9 +7,12 @@ const CandidateDashboard = () => {
   const [applications, setApplications] = useState([]);
   const [resumeFile, setResumeFile] = useState(null);
   const [uploadMessage, setUploadMessage] = useState('');
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profile, setProfile] = useState({ name: '', email: '', skills: '', company: '' });
 
   useEffect(() => {
     fetchApplications();
+    fetchProfile();
   }, []);
 
   const fetchApplications = async () => {
@@ -18,6 +21,40 @@ const CandidateDashboard = () => {
       setApplications(data);
     } catch (error) {
       console.error('Error fetching applications', error);
+    }
+  };
+
+  const fetchProfile = async () => {
+    try {
+      const { data } = await axios.get('/api/auth/profile');
+      setProfile({
+        name: data.name || '',
+        email: data.email || '',
+        skills: data.skills ? data.skills.join(', ') : '',
+        company: data.company || ''
+      });
+    } catch (error) {
+      console.error('Error fetching profile', error);
+    }
+  };
+
+  const handleProfileUpdate = async (e) => {
+    e.preventDefault();
+    try {
+      const skillsArray = profile.skills.split(',').map(s => s.trim()).filter(s => s);
+      const { data } = await axios.put('/api/auth/profile', {
+        name: profile.name,
+        email: profile.email,
+        skills: skillsArray,
+        company: profile.company
+      });
+      // Optionally update local storage user if AuthContext depends on it
+      localStorage.setItem('user', JSON.stringify({ ...user, name: data.name }));
+      alert('Profile updated successfully!');
+      setIsEditingProfile(false);
+    } catch (error) {
+      console.error('Error updating profile', error);
+      alert('Failed to update profile');
     }
   };
 
@@ -66,6 +103,41 @@ const CandidateDashboard = () => {
           <h2 style={{ fontSize: '2.5rem', color: '#b91c1c', margin: 0 }}>{counts.rejected}</h2>
           <p style={{ color: 'var(--text-gray)', margin: 0, fontWeight: 500 }}>Rejected</p>
         </div>
+      </div>
+
+      <div className="card" style={{ marginBottom: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+          <h3>My Profile</h3>
+          <button className="btn btn-outline" style={{ padding: '6px 12px' }} onClick={() => setIsEditingProfile(!isEditingProfile)}>
+            {isEditingProfile ? 'Cancel Edit' : 'Edit Profile'}
+          </button>
+        </div>
+        
+        {isEditingProfile ? (
+          <form onSubmit={handleProfileUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            <div style={{ display: 'flex', gap: '15px' }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-gray)' }}>Name</label>
+                <input type="text" value={profile.name} onChange={e => setProfile({...profile, name: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid var(--border-color)' }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-gray)' }}>Email</label>
+                <input type="email" value={profile.email} onChange={e => setProfile({...profile, email: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid var(--border-color)' }} />
+              </div>
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-gray)' }}>Skills (comma separated)</label>
+              <input type="text" value={profile.skills} onChange={e => setProfile({...profile, skills: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid var(--border-color)' }} placeholder="React, Node.js, Python" />
+            </div>
+            <button type="submit" className="btn btn-primary" style={{ alignSelf: 'flex-start' }}>Save Changes</button>
+          </form>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', color: 'var(--text-dark)' }}>
+            <p style={{ margin: 0 }}><strong>Name:</strong> {profile.name}</p>
+            <p style={{ margin: 0 }}><strong>Email:</strong> {profile.email}</p>
+            <p style={{ margin: 0 }}><strong>Skills:</strong> {profile.skills || <span style={{ color: 'var(--text-light)' }}>Not provided</span>}</p>
+          </div>
+        )}
       </div>
 
       <div className="upload-section card">

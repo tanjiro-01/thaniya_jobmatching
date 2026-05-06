@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import './Jobs.css';
 
 const Jobs = () => {
@@ -10,16 +11,20 @@ const Jobs = () => {
   const [location, setLocation] = useState('');
   const [experience, setExperience] = useState('');
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
+    if (user && user.role === 'recruiter') {
+      navigate('/dashboard');
+      return;
+    }
     fetchJobs();
-  }, []);
+  }, [user, navigate]);
 
-  const fetchJobs = async (searchKeyword = '') => {
+  const fetchJobs = async () => {
     setLoading(true);
     try {
-      // In a real app we would pass location and experience to the backend as well
-      const { data } = await axios.get(`/api/jobs?keyword=${searchKeyword}`);
+      const { data } = await axios.get(`/api/jobs?keyword=${keyword}&location=${location}&experience=${experience}`);
       setJobs(data);
     } catch (error) {
       console.error('Error fetching jobs', error);
@@ -30,7 +35,7 @@ const Jobs = () => {
 
   const handleSearch = (e) => {
     e.preventDefault();
-    fetchJobs(keyword);
+    fetchJobs();
   };
 
   return (
