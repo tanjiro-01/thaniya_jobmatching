@@ -1,13 +1,14 @@
 .navbar {
-  background-color: #1a1a1a;
-  height: 80px;
+  background-color: var(--white);
+  height: 70px;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 1.2rem;
+  font-size: 1rem;
   position: sticky;
   top: 0;
   z-index: 999;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .navbar-container {
@@ -20,14 +21,15 @@
 }
 
 .navbar-logo {
-  color: #fff;
+  color: var(--primary-blue);
   justify-self: start;
   cursor: pointer;
   text-decoration: none;
-  font-size: 2rem;
+  font-size: 1.5rem;
   display: flex;
   align-items: center;
-  font-weight: bold;
+  font-weight: 800;
+  letter-spacing: -0.5px;
 }
 
 .nav-menu {
@@ -40,53 +42,41 @@
 }
 
 .nav-item {
-  height: 80px;
   display: flex;
   align-items: center;
+  margin-left: 20px;
 }
 
 .nav-links {
-  color: #fff;
+  color: var(--text-gray);
   display: flex;
   align-items: center;
   text-decoration: none;
   padding: 0.5rem 1rem;
-  height: 100%;
+  font-weight: 500;
   transition: all 0.2s ease-out;
 }
 
 .nav-links:hover {
-  color: #646cff;
-  border-bottom: 4px solid #646cff;
+  color: var(--primary-blue);
 }
 
-.btn {
-  padding: 8px 20px;
-  border-radius: 4px;
-  outline: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1rem;
-  margin-left: 10px;
-  text-decoration: none;
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 500;
+  color: var(--text-dark);
 }
 
-.btn-primary {
-  background-color: #646cff;
-  color: #fff;
-}
-
-.btn-primary:hover {
-  background-color: #535bf2;
-}
-
-.btn-outline {
-  background-color: transparent;
-  color: #fff;
-  border: 1px solid #fff;
-}
-
-.btn-outline:hover {
-  background-color: #fff;
-  color: #1a1a1a;
+.avatar {
+  width: 35px;
+  height: 35px;
+  background-color: var(--primary-blue);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
 }

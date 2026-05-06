@@ -31,20 +31,23 @@ const Navbar = () => {
                   Dashboard
                 </Link>
               </li>
-              <li className="nav-item">
-                <button onClick={handleLogout} className="btn btn-outline">
-                  Logout
-                </button>
+              <li className="nav-item" style={{ marginLeft: '30px' }}>
+                <div className="user-profile">
+                  <div className="avatar">{user.name.charAt(0).toUpperCase()}</div>
+                  <button onClick={handleLogout} className="btn btn-outline" style={{ padding: '6px 16px', fontSize: '0.9rem' }}>
+                    Logout
+                  </button>
+                </div>
               </li>
             </>
           ) : (
             <>
-              <li className="nav-item">
-                <Link to="/login" className="nav-links">
+              <li className="nav-item" style={{ marginLeft: '30px' }}>
+                <Link to="/login" className="btn btn-outline">
                   Login
                 </Link>
               </li>
-              <li className="nav-item">
+              <li className="nav-item" style={{ marginLeft: '10px' }}>
                 <Link to="/register" className="btn btn-primary">
                   Register
                 </Link>
