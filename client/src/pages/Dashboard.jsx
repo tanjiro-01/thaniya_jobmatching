@@ -155,6 +155,8 @@ const Dashboard = () => {
             )}
           </div>
         </div>
+      )}
+      
       {user.role === 'admin' && (
         <div className="admin-section">
           <div className="actions card">
