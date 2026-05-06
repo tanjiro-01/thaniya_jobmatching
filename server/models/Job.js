@@ -20,6 +20,11 @@ const jobSchema = new mongoose.Schema({
   salary: {
     type: String
   },
+  experienceLevel: {
+    type: String,
+    enum: ['fresher', '1-3', '4-7', '8+'],
+    default: 'fresher'
+  },
   keywords: [{
     type: String
   }],

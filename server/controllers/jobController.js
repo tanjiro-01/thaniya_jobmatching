@@ -1,10 +1,19 @@
 const Job = require('../models/Job');
+const Notification = require('../models/Notification');
+const User = require('../models/User');
+const Application = require('../models/Application');
 
 // @desc    Get all jobs (with optional search/filter)
 // @route   GET /api/jobs
 // @access  Public
 const getJobs = async (req, res) => {
   try {
+    // Auto-seed existing jobs missing experienceLevel
+    await Job.updateMany(
+      { experienceLevel: { $exists: false } },
+      { $set: { experienceLevel: 'fresher' } }
+    );
+
     let query = {};
 
     if (req.query.keyword) {
@@ -19,13 +28,8 @@ const getJobs = async (req, res) => {
       query.location = { $regex: req.query.location, $options: 'i' };
     }
 
-    // Since we don't have a rigid experience field in the model currently,
-    // we could filter by title or description optionally, or if we had an experience field, use it.
-    // For now, if experience is passed, we'll try to find it in the description as a basic filter.
     if (req.query.experience) {
-      // Basic implementation for experience filtering
-      if (!query.$or) query.$or = [];
-      query.$or.push({ description: { $regex: req.query.experience, $options: 'i' } });
+      query.experienceLevel = req.query.experience;
     }
 
     const jobs = await Job.find(query).populate('recruiter', 'name company');
@@ -68,7 +72,7 @@ const getJobById = async (req, res) => {
 // @access  Private/Recruiter
 const createJob = async (req, res) => {
   try {
-    const { title, description, company, location, salary, keywords } = req.body;
+    const { title, description, company, location, salary, keywords, experienceLevel } = req.body;
 
     const job = new Job({
       title,
@@ -77,10 +81,33 @@ const createJob = async (req, res) => {
       location,
       salary,
       keywords,
+      experienceLevel,
       recruiter: req.user._id,
     });
 
     const createdJob = await job.save();
+    
+    // Notify all candidates about the new job
+    const candidates = await User.find({ role: 'candidate' });
+    const notifications = candidates.map(candidate => ({
+      recipient: candidate._id,
+      message: `New job posted: ${title} at ${company}`,
+      type: 'new_job',
+      relatedJob: createdJob._id
+    }));
+    
+    // Also send a confirmation to the recruiter
+    notifications.push({
+      recipient: req.user._id,
+      message: `Successfully posted your new job: ${title}`,
+      type: 'new_job',
+      relatedJob: createdJob._id
+    });
+    
+    if (notifications.length > 0) {
+      await Notification.insertMany(notifications);
+    }
+
     res.status(201).json(createdJob);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -110,6 +137,28 @@ const updateJob = async (req, res) => {
       job.keywords = keywords || job.keywords;
 
       const updatedJob = await job.save();
+      
+      // Notify candidates who have applied for this job
+      const applications = await Application.find({ job: job._id }).populate('candidate');
+      const notifications = applications.map(app => ({
+        recipient: app.candidate._id,
+        message: `The job "${job.title}" you applied for has been updated.`,
+        type: 'job_update',
+        relatedJob: job._id
+      }));
+      
+      // Also send a confirmation to the recruiter
+      notifications.push({
+        recipient: req.user._id,
+        message: `Successfully updated your job posting: ${job.title}`,
+        type: 'job_update',
+        relatedJob: job._id
+      });
+      
+      if (notifications.length > 0) {
+        await Notification.insertMany(notifications);
+      }
+
       res.json(updatedJob);
     } else {
       res.status(404).json({ message: 'Job not found' });

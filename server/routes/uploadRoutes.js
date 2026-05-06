@@ -12,15 +12,7 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    cb(null, uploadDir);
-  },
-  filename(req, file, cb) {
-    cb(null, `resume-${req.user._id}-${Date.now()}${path.extname(file.originalname)}`);
-  }
-});
-
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 router.post('/', protect, upload.single('resume'), async (req, res) => {
@@ -29,17 +21,42 @@ router.post('/', protect, upload.single('resume'), async (req, res) => {
       return res.status(400).json({ message: 'No file uploaded' });
     }
     
-    // Update user's resume URL (using a local path)
-    const fileUrl = `/uploads/${req.file.filename}`;
+    // Convert to Base64
+    const base64String = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    
     const user = await User.findById(req.user._id);
     if (user) {
-      user.resume = fileUrl;
+      user.resume = base64String;
       await user.save();
     }
 
     res.json({
       message: 'Resume uploaded successfully',
-      url: fileUrl
+      url: base64String
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+router.post('/avatar', protect, upload.single('avatar'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+    
+    // Convert to Base64
+    const base64String = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+
+    const user = await User.findById(req.user._id);
+    if (user) {
+      user.avatar = base64String;
+      await user.save();
+    }
+
+    res.json({
+      message: 'Avatar uploaded successfully',
+      url: base64String
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

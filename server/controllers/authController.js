@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
+const bcrypt = require('bcryptjs');
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
@@ -92,6 +93,15 @@ const updateUserProfile = async (req, res) => {
       user.email = req.body.email || user.email;
       user.skills = req.body.skills || user.skills;
       user.company = req.body.company || user.company;
+      
+      // New candidate fields
+      if (req.body.age !== undefined) user.age = req.body.age;
+      if (req.body.gender !== undefined) user.gender = req.body.gender;
+      if (req.body.experienceYears !== undefined) user.experienceYears = req.body.experienceYears;
+      if (req.body.education !== undefined) user.education = req.body.education;
+      if (req.body.location !== undefined) user.location = req.body.location;
+      if (req.body.phone !== undefined) user.phone = req.body.phone;
+      if (req.body.avatar !== undefined) user.avatar = req.body.avatar;
 
       if (req.body.password) {
         user.password = req.body.password;
@@ -106,6 +116,12 @@ const updateUserProfile = async (req, res) => {
         role: updatedUser.role,
         skills: updatedUser.skills,
         company: updatedUser.company,
+        age: updatedUser.age,
+        gender: updatedUser.gender,
+        experienceYears: updatedUser.experienceYears,
+        education: updatedUser.education,
+        location: updatedUser.location,
+        phone: updatedUser.phone,
         token: generateToken(updatedUser._id),
       });
     } else {
@@ -116,4 +132,32 @@ const updateUserProfile = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, getUserProfile, updateUserProfile };
+// @desc    Update user password
+// @route   PUT /api/auth/password
+// @access  Private
+const updatePassword = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const { currentPassword, newPassword } = req.body;
+
+    // Check if current password is correct
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid current password' });
+    }
+
+    // Assign new password, pre('save') hook will hash it
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ message: 'Password updated successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { registerUser, loginUser, getUserProfile, updateUserProfile, updatePassword };

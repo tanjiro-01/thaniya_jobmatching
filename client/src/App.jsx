@@ -4,6 +4,10 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Jobs from './pages/Jobs'
 import Dashboard from './pages/Dashboard'
+import Profile from './pages/Profile'
+import CreateJob from './pages/CreateJob'
+import Settings from './pages/Settings'
+import FAQs from './pages/FAQs'
 import './App.css'
 
 function App() {
@@ -17,6 +21,11 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/jobs" element={<Jobs />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/create-job" element={<CreateJob />} />
+          <Route path="/edit-job/:id" element={<CreateJob />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/faqs" element={<FAQs />} />
         </Routes>
       </main>
     </Router>

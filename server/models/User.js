@@ -28,13 +28,35 @@ const userSchema = new mongoose.Schema({
   }],
   company: {
     type: String // for recruiters
+  },
+  age: {
+    type: Number
+  },
+  gender: {
+    type: String,
+    enum: ['Male', 'Female', 'Other', 'Prefer not to say', '']
+  },
+  experienceYears: {
+    type: Number
+  },
+  education: {
+    type: String
+  },
+  location: {
+    type: String
+  },
+  phone: {
+    type: String
+  },
+  avatar: {
+    type: String
   }
 }, { timestamps: true });
 
 // Hash password before saving
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function() {
   if (!this.isModified('password')) {
-    next();
+    return;
   }
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);

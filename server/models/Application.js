@@ -18,6 +18,15 @@ const applicationSchema = new mongoose.Schema({
   },
   resume: {
     type: String // Snapshot of resume URL at the time of application
+  },
+  coverLetter: {
+    type: String
+  },
+  contactPhone: {
+    type: String
+  },
+  contactEmail: {
+    type: String
   }
 }, { timestamps: true });
 

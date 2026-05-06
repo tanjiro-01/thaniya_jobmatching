@@ -78,8 +78,14 @@ const RecruiterDashboard = () => {
                     <h4 style={{ margin: '0 0 5px 0', fontSize: '1.1rem', color: 'var(--text-dark)' }}>{job.title}</h4>
                     <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-gray)' }}>{job.location} • {job.salary || 'Salary not disclosed'}</p>
                   </div>
-                  <div style={{ color: 'var(--primary-blue)', fontWeight: 600 }}>
-                    {selectedJob === job._id ? 'Hide Applicants ▲' : 'View Applicants ▼'}
+                  <div style={{ color: 'var(--primary-blue)', fontWeight: 600, display: 'flex', gap: '20px', alignItems: 'center' }}>
+                    <span 
+                      onClick={(e) => { e.stopPropagation(); navigate(`/edit-job/${job._id}`); }}
+                      style={{ fontSize: '0.9rem', padding: '4px 10px', border: '1px solid var(--primary-blue)', borderRadius: '4px' }}
+                    >
+                      ✏️ Edit
+                    </span>
+                    <span>{selectedJob === job._id ? 'Hide Applicants ▲' : 'View Applicants ▼'}</span>
                   </div>
                 </div>
 
@@ -101,7 +107,16 @@ const RecruiterDashboard = () => {
                         <tbody>
                           {applicants.map(app => (
                             <tr key={app._id}>
-                              <td style={{ fontWeight: 500 }}>{app.candidate?.name}</td>
+                              <td style={{ fontWeight: 500 }}>
+                                <div style={{ marginBottom: '5px' }}>{app.candidate?.name}</div>
+                                <div style={{ fontSize: '0.8rem', color: 'var(--text-gray)', display: 'grid', gap: '2px' }}>
+                                  {app.candidate?.phone && <span>📞 {app.candidate.phone}</span>}
+                                  {(app.candidate?.age || app.candidate?.gender) && <span>👤 {app.candidate?.age ? `${app.candidate.age} yrs` : ''} {app.candidate?.gender}</span>}
+                                  {app.candidate?.location && <span>📍 {app.candidate.location}</span>}
+                                  {app.candidate?.experienceYears !== undefined && <span>💼 {app.candidate.experienceYears} yrs exp</span>}
+                                  {app.candidate?.education && <span>🎓 {app.candidate.education}</span>}
+                                </div>
+                              </td>
                               <td style={{ color: 'var(--text-gray)' }}>{app.candidate?.email}</td>
                               <td>
                                 <select 

@@ -6,11 +6,11 @@
 
 /* Hero Banner */
 .hero-banner {
-  background: white;
+  background: var(--white);
   padding: 80px 20px;
   text-align: center;
   border-bottom: 1px solid var(--border-color);
-  background-image: linear-gradient(to right, #f8faff, #ffffff, #f8faff);
+  background-image: none; /* Removed the hardcoded light gradient */
 }
 
 .hero-title {
@@ -36,7 +36,7 @@
 .complex-search-form {
   display: flex;
   align-items: center;
-  background: white;
+  background: var(--white);
   border-radius: 50px;
   box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1);
   padding: 8px 8px 8px 24px;
@@ -54,6 +54,7 @@
   margin-right: 10px;
   font-size: 1.2rem;
   opacity: 0.5;
+  color: var(--text-dark);
 }
 
 .complex-search-form input,
@@ -65,6 +66,11 @@
   color: var(--text-dark);
   background: transparent;
   padding: 10px 0;
+}
+
+.complex-search-form select option {
+  background: var(--white);
+  color: var(--text-dark);
 }
 
 .complex-search-form input::placeholder {
@@ -109,9 +115,9 @@
 }
 
 .job-card-premium:hover {
-  box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.15);
   transform: translateY(-2px);
-  border-color: #d1d5db;
+  border-color: var(--text-light);
 }
 
 /* Subtle accent line on hover */
@@ -159,7 +165,7 @@
 .company-logo-placeholder {
   width: 48px;
   height: 48px;
-  background-color: #f3f4f6;
+  background-color: var(--bg-color);
   border-radius: 8px;
   display: flex;
   justify-content: center;
@@ -198,7 +204,7 @@
 }
 
 .keyword-pill {
-  background-color: var(--white);
+  background-color: var(--bg-color);
   border: 1px solid var(--border-color);
   color: var(--text-gray);
   padding: 4px 10px;
@@ -229,9 +235,86 @@
 .loading-state, .empty-state {
   text-align: center;
   padding: 60px 20px;
-  background: white;
+  background: var(--white);
   border-radius: 12px;
   color: var(--text-gray);
   font-size: 1.1rem;
   border: 1px solid var(--border-color);
+}
+
+/* Modal Styling */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: var(--white);
+  padding: 30px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-light);
+}
+
+.modal-close:hover {
+  color: var(--text-dark);
+}
+
+.modal-content h2 {
+  margin-top: 0;
+  color: var(--text-dark);
+}
+
+.modal-content .form-group {
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.modal-content label {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--text-gray);
+  font-weight: 500;
+}
+
+.modal-content input, .modal-content textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.modal-content textarea {
+  resize: vertical;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
 }

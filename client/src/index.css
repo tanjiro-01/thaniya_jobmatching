@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
+  /* Light Theme Variables */
   --primary-blue: #275df5;
   --primary-blue-hover: #1e4bc4;
   --bg-color: #f8f9fa;
@@ -9,6 +10,18 @@
   --text-light: #9ca3af;
   --white: #ffffff;
   --border-color: #e5e7eb;
+}
+
+[data-theme="dark"] {
+  /* Dark Theme Variables (Greyish background) */
+  --primary-blue: #3b82f6; /* Slightly lighter blue for dark mode */
+  --primary-blue-hover: #60a5fa;
+  --bg-color: #121212; /* Very dark grey background */
+  --text-dark: #f3f4f6; /* Light grey text */
+  --text-gray: #d1d5db; /* Medium grey text */
+  --text-light: #9ca3af; 
+  --white: #1e1e1e; /* Dark grey for card backgrounds */
+  --border-color: #374151; /* Dark border color */
 }
 
 body {

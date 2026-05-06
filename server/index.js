@@ -15,20 +15,22 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Serve static files for uploaded resumes
-const path = require('path');
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Serve static files for uploaded resumes (Removed, now using Base64 MongoDB storage)
+// const path = require('path');
+// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 const authRoutes = require('./routes/authRoutes');
 const jobRoutes = require('./routes/jobRoutes');
 const applicationRoutes = require('./routes/applicationRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/applications', applicationRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 app.get('/', (req, res) => {
   res.send('API is running...');

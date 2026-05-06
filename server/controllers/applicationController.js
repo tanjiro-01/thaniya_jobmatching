@@ -1,6 +1,8 @@
 const Application = require('../models/Application');
 const Job = require('../models/Job');
 
+const Notification = require('../models/Notification');
+
 // @desc    Apply for a job
 // @route   POST /api/applications/:jobId
 // @access  Private/Candidate
@@ -22,13 +24,27 @@ const applyForJob = async (req, res) => {
       return res.status(400).json({ message: 'You have already applied for this job' });
     }
 
+    const { coverLetter, contactPhone, contactEmail } = req.body;
+
     const application = new Application({
       job: req.params.jobId,
       candidate: req.user._id,
-      resume: req.user.resume || '' // Optional, can be updated later with Cloudinary
+      resume: req.user.resume || '',
+      coverLetter,
+      contactPhone: contactPhone || req.user.phone,
+      contactEmail: contactEmail || req.user.email
     });
 
     const createdApplication = await application.save();
+    
+    // Notify recruiter
+    await Notification.create({
+      recipient: job.recruiter,
+      message: `${req.user.name} applied to your job: ${job.title}`,
+      type: 'new_applicant',
+      relatedJob: job._id
+    });
+
     res.status(201).json(createdApplication);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -71,7 +87,7 @@ const getApplicationsByJob = async (req, res) => {
     }
 
     const applications = await Application.find({ job: req.params.jobId })
-      .populate('candidate', 'name email resume skills');
+      .populate('candidate', 'name email phone location age gender experienceYears education resume skills');
       
     res.json(applications);
   } catch (error) {
@@ -112,6 +128,15 @@ const updateApplicationStatus = async (req, res) => {
 
     application.status = status;
     const updatedApplication = await application.save();
+    
+    // Notify candidate
+    await Notification.create({
+      recipient: application.candidate,
+      message: `Your application for ${application.job.title} was marked as: ${status}`,
+      type: 'application_status',
+      relatedJob: application.job._id
+    });
+
     res.json(updatedApplication);
   } catch (error) {
     res.status(500).json({ message: error.message });

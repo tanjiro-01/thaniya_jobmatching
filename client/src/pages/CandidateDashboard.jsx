@@ -1,18 +1,14 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
+import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 
 const CandidateDashboard = () => {
-  const { user } = useContext(AuthContext);
+  const { user, setUser } = useContext(AuthContext);
   const [applications, setApplications] = useState([]);
-  const [resumeFile, setResumeFile] = useState(null);
-  const [uploadMessage, setUploadMessage] = useState('');
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [profile, setProfile] = useState({ name: '', email: '', skills: '', company: '' });
 
   useEffect(() => {
     fetchApplications();
-    fetchProfile();
   }, []);
 
   const fetchApplications = async () => {
@@ -21,58 +17,6 @@ const CandidateDashboard = () => {
       setApplications(data);
     } catch (error) {
       console.error('Error fetching applications', error);
-    }
-  };
-
-  const fetchProfile = async () => {
-    try {
-      const { data } = await axios.get('/api/auth/profile');
-      setProfile({
-        name: data.name || '',
-        email: data.email || '',
-        skills: data.skills ? data.skills.join(', ') : '',
-        company: data.company || ''
-      });
-    } catch (error) {
-      console.error('Error fetching profile', error);
-    }
-  };
-
-  const handleProfileUpdate = async (e) => {
-    e.preventDefault();
-    try {
-      const skillsArray = profile.skills.split(',').map(s => s.trim()).filter(s => s);
-      const { data } = await axios.put('/api/auth/profile', {
-        name: profile.name,
-        email: profile.email,
-        skills: skillsArray,
-        company: profile.company
-      });
-      // Optionally update local storage user if AuthContext depends on it
-      localStorage.setItem('user', JSON.stringify({ ...user, name: data.name }));
-      alert('Profile updated successfully!');
-      setIsEditingProfile(false);
-    } catch (error) {
-      console.error('Error updating profile', error);
-      alert('Failed to update profile');
-    }
-  };
-
-  const handleResumeUpload = async (e) => {
-    e.preventDefault();
-    if (!resumeFile) return;
-
-    const formData = new FormData();
-    formData.append('resume', resumeFile);
-
-    try {
-      setUploadMessage('Uploading...');
-      const { data } = await axios.post('/api/upload', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      setUploadMessage('Resume uploaded successfully!');
-    } catch (error) {
-      setUploadMessage('Upload failed. Please try again.');
     }
   };
 
@@ -87,6 +31,14 @@ const CandidateDashboard = () => {
   };
 
   const counts = getStatusCounts();
+
+  const pieData = [
+    { name: 'Applied', value: counts.applied },
+    { name: 'Shortlisted', value: counts.shortlisted },
+    { name: 'Rejected', value: counts.rejected },
+  ].filter(d => d.value > 0);
+
+  const COLORS = ['var(--primary-blue)', '#059669', '#b91c1c'];
 
   return (
     <div className="candidate-section">
@@ -106,54 +58,46 @@ const CandidateDashboard = () => {
       </div>
 
       <div className="card" style={{ marginBottom: '24px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-          <h3>My Profile</h3>
-          <button className="btn btn-outline" style={{ padding: '6px 12px' }} onClick={() => setIsEditingProfile(!isEditingProfile)}>
-            {isEditingProfile ? 'Cancel Edit' : 'Edit Profile'}
-          </button>
-        </div>
-        
-        {isEditingProfile ? (
-          <form onSubmit={handleProfileUpdate} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-            <div style={{ display: 'flex', gap: '15px' }}>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-gray)' }}>Name</label>
-                <input type="text" value={profile.name} onChange={e => setProfile({...profile, name: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid var(--border-color)' }} />
-              </div>
-              <div style={{ flex: 1 }}>
-                <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-gray)' }}>Email</label>
-                <input type="email" value={profile.email} onChange={e => setProfile({...profile, email: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid var(--border-color)' }} />
-              </div>
-            </div>
-            <div>
-              <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-gray)' }}>Skills (comma separated)</label>
-              <input type="text" value={profile.skills} onChange={e => setProfile({...profile, skills: e.target.value})} style={{ width: '100%', padding: '10px', borderRadius: '4px', border: '1px solid var(--border-color)' }} placeholder="React, Node.js, Python" />
-            </div>
-            <button type="submit" className="btn btn-primary" style={{ alignSelf: 'flex-start' }}>Save Changes</button>
-          </form>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', color: 'var(--text-dark)' }}>
-            <p style={{ margin: 0 }}><strong>Name:</strong> {profile.name}</p>
-            <p style={{ margin: 0 }}><strong>Email:</strong> {profile.email}</p>
-            <p style={{ margin: 0 }}><strong>Skills:</strong> {profile.skills || <span style={{ color: 'var(--text-light)' }}>Not provided</span>}</p>
+        <h3 style={{ marginBottom: '20px' }}>Application Analytics</h3>
+        <div style={{ display: 'flex', gap: '20px', height: '300px' }}>
+          <div style={{ flex: 1, backgroundColor: 'var(--bg-color)', borderRadius: '8px', padding: '15px' }}>
+            <h4 style={{ textAlign: 'center', marginBottom: '10px', color: 'var(--text-dark)' }}>Status Distribution</h4>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                  dataKey="value"
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <RechartsTooltip />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
-        )}
-      </div>
-
-      <div className="upload-section card">
-        <h3>Manage Resume</h3>
-        <p style={{ color: 'var(--text-gray)', marginBottom: '15px' }}>Upload your latest resume to apply for jobs with one click.</p>
-        <form onSubmit={handleResumeUpload} style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-          <input 
-            type="file" 
-            accept=".pdf,.doc,.docx" 
-            onChange={(e) => setResumeFile(e.target.files[0])} 
-            style={{ flex: 1, padding: '10px' }}
-          />
-          <button type="submit" className="btn btn-primary">Upload</button>
-        </form>
-        {uploadMessage && <p style={{ marginTop: '10px', color: 'var(--primary-blue)' }}>{uploadMessage}</p>}
-        {user.resume && <p className="success-text" style={{ marginTop: '10px' }}>✅ You have a resume on file.</p>}
+          <div style={{ flex: 1, backgroundColor: 'var(--bg-color)', borderRadius: '8px', padding: '15px' }}>
+            <h4 style={{ textAlign: 'center', marginBottom: '10px', color: 'var(--text-dark)' }}>Recent Activity</h4>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={pieData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                <YAxis allowDecimals={false} axisLine={false} tickLine={false} />
+                <RechartsTooltip cursor={{fill: 'transparent'}} />
+                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                  {pieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
 
       <div className="applications-section card">
