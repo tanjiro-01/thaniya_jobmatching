@@ -8,6 +8,65 @@ const Notification = require("./models/Notification");
 
 dotenv.config({ path: "./.env" });
 
+const createResumeDataUrl = (name, role, summary, skills) => {
+  const resumeHtml = `
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            color: #111827;
+            line-height: 1.6;
+          }
+          h1 {
+            margin: 0 0 8px 0;
+            font-size: 28px;
+          }
+          .role {
+            margin: 0 0 20px 0;
+            color: #2563eb;
+            font-size: 16px;
+            font-weight: 700;
+          }
+          .section {
+            margin-top: 20px;
+          }
+          .label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #6b7280;
+            margin-bottom: 6px;
+            font-weight: 700;
+          }
+          ul {
+            margin: 0;
+            padding-left: 20px;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>${name}</h1>
+        <p class="role">${role}</p>
+        <div class="section">
+          <div class="label">Professional Summary</div>
+          <p>${summary}</p>
+        </div>
+        <div class="section">
+          <div class="label">Key Skills</div>
+          <ul>
+            ${skills.map((skill) => `<li>${skill}</li>`).join("")}
+          </ul>
+        </div>
+      </body>
+    </html>
+  `;
+
+  return `data:text/html;base64,${Buffer.from(resumeHtml).toString("base64")}`;
+};
+
 async function seed() {
   if (!process.env.MONGO_URI) {
     throw new Error("MONGO_URI is missing in server/.env");
@@ -60,7 +119,12 @@ async function seed() {
     email: "candidate1@example.com",
     password: "candidate123",
     role: "candidate",
-    resume: "https://example.com/resumes/riya-patel.pdf",
+    resume: createResumeDataUrl(
+      "Riya Patel",
+      "Frontend Developer",
+      "Frontend developer focused on React, clean UI architecture, and fast product delivery.",
+      ["React", "TypeScript", "Node.js", "MongoDB", "CSS"],
+    ),
     skills: ["React", "Node.js", "MongoDB"],
     age: 24,
     gender: "Female",
@@ -76,7 +140,12 @@ async function seed() {
     email: "candidate2@example.com",
     password: "candidate123",
     role: "candidate",
-    resume: "https://example.com/resumes/kabir-khan.pdf",
+    resume: createResumeDataUrl(
+      "Kabir Khan",
+      "Backend Engineer",
+      "Backend engineer experienced in API design, data modeling, and reliable service development.",
+      ["Python", "Django", "PostgreSQL", "REST APIs", "Redis"],
+    ),
     skills: ["Python", "Django", "PostgreSQL"],
     age: 27,
     gender: "Male",
@@ -92,7 +161,12 @@ async function seed() {
     email: "candidate3@example.com",
     password: "candidate123",
     role: "candidate",
-    resume: "https://example.com/resumes/sneha-nair.pdf",
+    resume: createResumeDataUrl(
+      "Sneha Nair",
+      "UI/UX Designer",
+      "Designer creating clean user journeys, design systems, and polished product experiences.",
+      ["Figma", "UI Design", "Wireframing", "Prototyping", "Tailwind CSS"],
+    ),
     skills: ["UI/UX", "Figma", "Tailwind CSS"],
     age: 23,
     gender: "Female",

@@ -1,15 +1,25 @@
-import React, { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
-import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 const RecruiterDashboard = () => {
-  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const [myJobs, setMyJobs] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
   const [applicants, setApplicants] = useState([]);
   const [resumePreview, setResumePreview] = useState(null);
+
+  const canPreviewInline = (resumeUrl) => {
+    if (!resumeUrl) return false;
+    return (
+      resumeUrl.startsWith("data:") ||
+      resumeUrl.startsWith("blob:") ||
+      resumeUrl.toLowerCase().includes(".pdf")
+    );
+  };
+
+  const getResumeFilename = (candidateName) =>
+    `${(candidateName || "Candidate").replace(/\s+/g, "_")}_Resume`;
 
   useEffect(() => {
     fetchMyJobs();
@@ -66,6 +76,40 @@ const RecruiterDashboard = () => {
 
   const closeResumePreview = () => {
     setResumePreview(null);
+  };
+
+  const downloadResume = async () => {
+    if (!resumePreview?.url) return;
+
+    const filename = getResumeFilename(resumePreview.name);
+
+    if (
+      resumePreview.url.startsWith("data:") ||
+      resumePreview.url.startsWith("blob:")
+    ) {
+      const link = document.createElement("a");
+      link.href = resumePreview.url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      return;
+    }
+
+    try {
+      const response = await fetch(resumePreview.url, { mode: "cors" });
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch {
+      window.open(resumePreview.url, "_blank", "noreferrer");
+    }
   };
 
   return (
@@ -364,17 +408,21 @@ const RecruiterDashboard = () => {
               <div
                 style={{ display: "flex", gap: "10px", alignItems: "center" }}
               >
-                <a
-                  href={resumePreview.url}
-                  download={`${resumePreview.name.replace(/\s+/g, "_")}_Resume`}
+                <button
+                  type="button"
+                  onClick={downloadResume}
                   style={{
                     color: "var(--primary-blue)",
                     fontWeight: 600,
                     textDecoration: "none",
+                    background: "transparent",
+                    border: "none",
+                    cursor: "pointer",
+                    padding: 0,
                   }}
                 >
                   Download
-                </a>
+                </button>
                 <button
                   type="button"
                   onClick={closeResumePreview}
@@ -385,16 +433,43 @@ const RecruiterDashboard = () => {
                 </button>
               </div>
             </div>
-            <iframe
-              title={`${resumePreview.name} resume preview`}
-              src={resumePreview.url}
-              style={{
-                width: "100%",
-                flex: 1,
-                border: "none",
-                background: "#fff",
-              }}
-            />
+            {canPreviewInline(resumePreview.url) ? (
+              <iframe
+                title={`${resumePreview.name} resume preview`}
+                src={resumePreview.url}
+                style={{
+                  width: "100%",
+                  flex: 1,
+                  border: "none",
+                  background: "#fff",
+                }}
+              />
+            ) : (
+              <div
+                style={{
+                  flex: 1,
+                  padding: "24px",
+                  display: "grid",
+                  placeItems: "center",
+                  textAlign: "center",
+                  gap: "12px",
+                }}
+              >
+                <p style={{ margin: 0, color: "var(--text-gray)" }}>
+                  This resume is hosted on an external link, so it cannot be
+                  previewed inline here.
+                </p>
+                <a
+                  href={resumePreview.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn btn-primary"
+                  style={{ textDecoration: "none" }}
+                >
+                  Open Resume
+                </a>
+              </div>
+            )}
           </div>
         </div>
       )}
