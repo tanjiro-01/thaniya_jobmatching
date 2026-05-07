@@ -1,14 +1,15 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import Navbar from './components/Navbar'
-import Login from './pages/Login'
-import Register from './pages/Register'
-import Jobs from './pages/Jobs'
-import Dashboard from './pages/Dashboard'
-import Profile from './pages/Profile'
-import CreateJob from './pages/CreateJob'
-import Settings from './pages/Settings'
-import FAQs from './pages/FAQs'
-import './App.css'
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Jobs from "./pages/Jobs";
+import Dashboard from "./pages/Dashboard";
+import Profile from "./pages/Profile";
+import CreateJob from "./pages/CreateJob";
+import Settings from "./pages/Settings";
+import FAQs from "./pages/FAQs";
+import Admin from "./pages/Admin";
+import "./App.css";
 
 function App() {
   return (
@@ -26,10 +27,11 @@ function App() {
           <Route path="/edit-job/:id" element={<CreateJob />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/faqs" element={<FAQs />} />
+          <Route path="/admin" element={<Admin />} />
         </Routes>
       </main>
     </Router>
-  )
+  );
 }
 
-export default App
+export default App;
