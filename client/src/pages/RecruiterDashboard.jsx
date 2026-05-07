@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useContext } from 'react';
-import axios from 'axios';
-import { AuthContext } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useContext } from "react";
+import axios from "axios";
+import { AuthContext } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const RecruiterDashboard = () => {
   const { user } = useContext(AuthContext);
@@ -9,6 +9,7 @@ const RecruiterDashboard = () => {
   const [myJobs, setMyJobs] = useState([]);
   const [selectedJob, setSelectedJob] = useState(null);
   const [applicants, setApplicants] = useState([]);
+  const [resumePreview, setResumePreview] = useState(null);
 
   useEffect(() => {
     fetchMyJobs();
@@ -16,10 +17,10 @@ const RecruiterDashboard = () => {
 
   const fetchMyJobs = async () => {
     try {
-      const { data } = await axios.get('/api/jobs/my-jobs');
+      const { data } = await axios.get("/api/jobs/my-jobs");
       setMyJobs(data);
     } catch (error) {
-      console.error('Error fetching jobs', error);
+      console.error("Error fetching jobs", error);
     }
   };
 
@@ -29,35 +30,64 @@ const RecruiterDashboard = () => {
       setApplicants([]);
       return;
     }
-    
+
     setSelectedJob(jobId);
     try {
       const { data } = await axios.get(`/api/applications/job/${jobId}`);
       setApplicants(data);
     } catch (error) {
-      console.error('Error fetching applicants', error);
+      console.error("Error fetching applicants", error);
     }
   };
 
   const handleStatusChange = async (appId, newStatus) => {
     try {
-      await axios.put(`/api/applications/${appId}/status`, { status: newStatus });
+      await axios.put(`/api/applications/${appId}/status`, {
+        status: newStatus,
+      });
       // Update local state to reflect change
-      setApplicants(applicants.map(app => app._id === appId ? { ...app, status: newStatus } : app));
+      setApplicants(
+        applicants.map((app) =>
+          app._id === appId ? { ...app, status: newStatus } : app,
+        ),
+      );
     } catch (error) {
-      console.error('Error updating status', error);
-      alert('Failed to update status');
+      console.error("Error updating status", error);
+      alert("Failed to update status");
     }
+  };
+
+  const openResumePreview = (resumeUrl, candidateName) => {
+    setResumePreview({
+      url: resumeUrl,
+      name: candidateName || "Candidate Resume",
+    });
+  };
+
+  const closeResumePreview = () => {
+    setResumePreview(null);
   };
 
   return (
     <div className="recruiter-section">
-      <div className="actions card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div
+        className="actions card"
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <div>
           <h3>Recruiter Actions</h3>
-          <p style={{ color: 'var(--text-gray)', margin: '5px 0 0 0' }}>Manage your postings and review applicants.</p>
+          <p style={{ color: "var(--text-gray)", margin: "5px 0 0 0" }}>
+            Manage your postings and review applicants.
+          </p>
         </div>
-        <button className="btn btn-primary" onClick={() => navigate('/create-job')}>
+        <button
+          className="btn btn-primary"
+          onClick={() => navigate("/create-job")}
+        >
           + Post a New Job
         </button>
       </div>
@@ -65,35 +95,109 @@ const RecruiterDashboard = () => {
       <div className="card">
         <h3>My Listed Jobs</h3>
         {myJobs.length === 0 ? (
-          <p style={{ color: 'var(--text-gray)' }}>You have not posted any jobs yet.</p>
+          <p style={{ color: "var(--text-gray)" }}>
+            You have not posted any jobs yet.
+          </p>
         ) : (
-          <div className="jobs-list" style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-            {myJobs.map(job => (
-              <div key={job._id} style={{ border: '1px solid var(--border-color)', borderRadius: '8px', overflow: 'hidden' }}>
-                <div 
-                  style={{ padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', backgroundColor: selectedJob === job._id ? 'var(--bg-color)' : 'transparent', transition: 'background-color 0.2s' }}
+          <div
+            className="jobs-list"
+            style={{ display: "flex", flexDirection: "column", gap: "15px" }}
+          >
+            {myJobs.map((job) => (
+              <div
+                key={job._id}
+                style={{
+                  border: "1px solid var(--border-color)",
+                  borderRadius: "8px",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    padding: "16px 20px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    cursor: "pointer",
+                    backgroundColor:
+                      selectedJob === job._id
+                        ? "var(--bg-color)"
+                        : "transparent",
+                    transition: "background-color 0.2s",
+                  }}
                   onClick={() => handleJobClick(job._id)}
                 >
                   <div>
-                    <h4 style={{ margin: '0 0 5px 0', fontSize: '1.1rem', color: 'var(--text-dark)' }}>{job.title}</h4>
-                    <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-gray)' }}>{job.location} • {job.salary || 'Salary not disclosed'}</p>
+                    <h4
+                      style={{
+                        margin: "0 0 5px 0",
+                        fontSize: "1.1rem",
+                        color: "var(--text-dark)",
+                      }}
+                    >
+                      {job.title}
+                    </h4>
+                    <p
+                      style={{
+                        margin: 0,
+                        fontSize: "0.9rem",
+                        color: "var(--text-gray)",
+                      }}
+                    >
+                      {job.location} • {job.salary || "Salary not disclosed"}
+                    </p>
                   </div>
-                  <div style={{ color: 'var(--primary-blue)', fontWeight: 600, display: 'flex', gap: '20px', alignItems: 'center' }}>
-                    <span 
-                      onClick={(e) => { e.stopPropagation(); navigate(`/edit-job/${job._id}`); }}
-                      style={{ fontSize: '0.9rem', padding: '4px 10px', border: '1px solid var(--primary-blue)', borderRadius: '4px' }}
+                  <div
+                    style={{
+                      color: "var(--primary-blue)",
+                      fontWeight: 600,
+                      display: "flex",
+                      gap: "20px",
+                      alignItems: "center",
+                    }}
+                  >
+                    <span
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/edit-job/${job._id}`);
+                      }}
+                      style={{
+                        fontSize: "0.9rem",
+                        padding: "4px 10px",
+                        border: "1px solid var(--primary-blue)",
+                        borderRadius: "4px",
+                      }}
                     >
                       ✏️ Edit
                     </span>
-                    <span>{selectedJob === job._id ? 'Hide Applicants ▲' : 'View Applicants ▼'}</span>
+                    <span>
+                      {selectedJob === job._id
+                        ? "Hide Applicants ▲"
+                        : "View Applicants ▼"}
+                    </span>
                   </div>
                 </div>
 
                 {selectedJob === job._id && (
-                  <div style={{ padding: '20px', borderTop: '1px solid var(--border-color)', backgroundColor: 'var(--white)' }}>
-                    <h5 style={{ margin: '0 0 15px 0', fontSize: '1rem' }}>Applicants ({applicants.length})</h5>
+                  <div
+                    style={{
+                      padding: "20px",
+                      borderTop: "1px solid var(--border-color)",
+                      backgroundColor: "var(--white)",
+                    }}
+                  >
+                    <h5 style={{ margin: "0 0 15px 0", fontSize: "1rem" }}>
+                      Applicants ({applicants.length})
+                    </h5>
                     {applicants.length === 0 ? (
-                      <p style={{ color: 'var(--text-gray)', fontStyle: 'italic' }}>No one has applied to this job yet.</p>
+                      <p
+                        style={{
+                          color: "var(--text-gray)",
+                          fontStyle: "italic",
+                        }}
+                      >
+                        No one has applied to this job yet.
+                      </p>
                     ) : (
                       <table className="data-table">
                         <thead>
@@ -105,36 +209,92 @@ const RecruiterDashboard = () => {
                           </tr>
                         </thead>
                         <tbody>
-                          {applicants.map(app => (
+                          {applicants.map((app) => (
                             <tr key={app._id}>
                               <td style={{ fontWeight: 500 }}>
-                                <div style={{ marginBottom: '5px' }}>{app.candidate?.name}</div>
-                                <div style={{ fontSize: '0.8rem', color: 'var(--text-gray)', display: 'grid', gap: '2px' }}>
-                                  {app.candidate?.phone && <span>📞 {app.candidate.phone}</span>}
-                                  {(app.candidate?.age || app.candidate?.gender) && <span>👤 {app.candidate?.age ? `${app.candidate.age} yrs` : ''} {app.candidate?.gender}</span>}
-                                  {app.candidate?.location && <span>📍 {app.candidate.location}</span>}
-                                  {app.candidate?.experienceYears !== undefined && <span>💼 {app.candidate.experienceYears} yrs exp</span>}
-                                  {app.candidate?.education && <span>🎓 {app.candidate.education}</span>}
+                                <div style={{ marginBottom: "5px" }}>
+                                  {app.candidate?.name}
+                                </div>
+                                <div
+                                  style={{
+                                    fontSize: "0.8rem",
+                                    color: "var(--text-gray)",
+                                    display: "grid",
+                                    gap: "2px",
+                                  }}
+                                >
+                                  {app.candidate?.phone && (
+                                    <span>📞 {app.candidate.phone}</span>
+                                  )}
+                                  {(app.candidate?.age ||
+                                    app.candidate?.gender) && (
+                                    <span>
+                                      👤{" "}
+                                      {app.candidate?.age
+                                        ? `${app.candidate.age} yrs`
+                                        : ""}{" "}
+                                      {app.candidate?.gender}
+                                    </span>
+                                  )}
+                                  {app.candidate?.location && (
+                                    <span>📍 {app.candidate.location}</span>
+                                  )}
+                                  {app.candidate?.experienceYears !==
+                                    undefined && (
+                                    <span>
+                                      💼 {app.candidate.experienceYears} yrs exp
+                                    </span>
+                                  )}
+                                  {app.candidate?.education && (
+                                    <span>🎓 {app.candidate.education}</span>
+                                  )}
                                 </div>
                               </td>
-                              <td style={{ color: 'var(--text-gray)' }}>{app.candidate?.email}</td>
+                              <td style={{ color: "var(--text-gray)" }}>
+                                {app.candidate?.email}
+                              </td>
                               <td>
-                                <select 
+                                <select
                                   value={app.status}
-                                  onChange={(e) => handleStatusChange(app._id, e.target.value)}
-                                  style={{ padding: '6px 10px' }}
+                                  onChange={(e) =>
+                                    handleStatusChange(app._id, e.target.value)
+                                  }
+                                  style={{ padding: "6px 10px" }}
                                 >
                                   <option value="applied">Applied</option>
-                                  <option value="shortlisted">Shortlisted</option>
+                                  <option value="shortlisted">
+                                    Shortlisted
+                                  </option>
                                   <option value="accepted">Accepted</option>
                                   <option value="rejected">Rejected</option>
                                 </select>
                               </td>
                               <td>
                                 {app.candidate?.resume ? (
-                                  <a href={app.candidate.resume} target="_blank" rel="noreferrer" style={{ color: 'var(--primary-blue)', fontWeight: 500, textDecoration: 'underline' }}>View PDF</a>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      openResumePreview(
+                                        app.candidate.resume,
+                                        app.candidate?.name,
+                                      )
+                                    }
+                                    style={{
+                                      color: "var(--primary-blue)",
+                                      fontWeight: 500,
+                                      textDecoration: "underline",
+                                      background: "transparent",
+                                      border: "none",
+                                      padding: 0,
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    View Resume
+                                  </button>
                                 ) : (
-                                  <span style={{ color: 'var(--text-light)' }}>Not provided</span>
+                                  <span style={{ color: "var(--text-light)" }}>
+                                    Not provided
+                                  </span>
                                 )}
                               </td>
                             </tr>
@@ -149,6 +309,95 @@ const RecruiterDashboard = () => {
           </div>
         )}
       </div>
+
+      {resumePreview && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            backgroundColor: "rgba(15, 23, 42, 0.7)",
+            zIndex: 2000,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "20px",
+          }}
+          onClick={closeResumePreview}
+        >
+          <div
+            style={{
+              width: "min(960px, 100%)",
+              height: "min(90vh, 900px)",
+              background: "var(--white)",
+              borderRadius: "12px",
+              overflow: "hidden",
+              boxShadow: "0 30px 80px rgba(0, 0, 0, 0.3)",
+              display: "flex",
+              flexDirection: "column",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div
+              style={{
+                padding: "14px 18px",
+                borderBottom: "1px solid var(--border-color)",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: "12px",
+              }}
+            >
+              <div>
+                <h3 style={{ margin: 0, color: "var(--text-dark)" }}>
+                  {resumePreview.name}
+                </h3>
+                <p
+                  style={{
+                    margin: "4px 0 0 0",
+                    color: "var(--text-gray)",
+                    fontSize: "0.9rem",
+                  }}
+                >
+                  Resume preview
+                </p>
+              </div>
+              <div
+                style={{ display: "flex", gap: "10px", alignItems: "center" }}
+              >
+                <a
+                  href={resumePreview.url}
+                  download={`${resumePreview.name.replace(/\s+/g, "_")}_Resume`}
+                  style={{
+                    color: "var(--primary-blue)",
+                    fontWeight: 600,
+                    textDecoration: "none",
+                  }}
+                >
+                  Download
+                </a>
+                <button
+                  type="button"
+                  onClick={closeResumePreview}
+                  className="btn btn-outline"
+                  style={{ padding: "8px 12px" }}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+            <iframe
+              title={`${resumePreview.name} resume preview`}
+              src={resumePreview.url}
+              style={{
+                width: "100%",
+                flex: 1,
+                border: "none",
+                background: "#fff",
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
