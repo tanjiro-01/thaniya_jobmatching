@@ -21,13 +21,14 @@ const CandidateDashboard = () => {
   };
 
   const getStatusCounts = () => {
-    let applied = 0, shortlisted = 0, rejected = 0;
+    let applied = 0, shortlisted = 0, accepted = 0, rejected = 0;
     applications.forEach(app => {
       if (app.status === 'applied') applied++;
       if (app.status === 'shortlisted') shortlisted++;
+      if (app.status === 'accepted') accepted++;
       if (app.status === 'rejected') rejected++;
     });
-    return { applied, shortlisted, rejected };
+    return { applied, shortlisted, accepted, rejected };
   };
 
   const counts = getStatusCounts();
@@ -35,10 +36,12 @@ const CandidateDashboard = () => {
   const pieData = [
     { name: 'Applied', value: counts.applied },
     { name: 'Shortlisted', value: counts.shortlisted },
+    { name: 'Accepted', value: counts.accepted },
     { name: 'Rejected', value: counts.rejected },
   ].filter(d => d.value > 0);
 
-  const COLORS = ['var(--primary-blue)', '#059669', '#b91c1c'];
+  // Blue for applied, Orange for shortlisted, Emerald green for accepted, Red for rejected
+  const COLORS = ['var(--primary-blue)', '#f59e0b', '#059669', '#b91c1c'];
 
   return (
     <div className="candidate-section">
@@ -48,8 +51,12 @@ const CandidateDashboard = () => {
           <p style={{ color: 'var(--text-gray)', margin: 0, fontWeight: 500 }}>Total Applied</p>
         </div>
         <div className="card stat-card" style={{ flex: 1, textAlign: 'center' }}>
-          <h2 style={{ fontSize: '2.5rem', color: '#059669', margin: 0 }}>{counts.shortlisted}</h2>
+          <h2 style={{ fontSize: '2.5rem', color: '#f59e0b', margin: 0 }}>{counts.shortlisted}</h2>
           <p style={{ color: 'var(--text-gray)', margin: 0, fontWeight: 500 }}>Shortlisted</p>
+        </div>
+        <div className="card stat-card" style={{ flex: 1, textAlign: 'center' }}>
+          <h2 style={{ fontSize: '2.5rem', color: '#059669', margin: 0 }}>{counts.accepted}</h2>
+          <p style={{ color: 'var(--text-gray)', margin: 0, fontWeight: 500 }}>Accepted</p>
         </div>
         <div className="card stat-card" style={{ flex: 1, textAlign: 'center' }}>
           <h2 style={{ fontSize: '2.5rem', color: '#b91c1c', margin: 0 }}>{counts.rejected}</h2>
